@@ -8,33 +8,46 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2/dist/chart.min.js"></script>
   </head>
   <body>
-    <canvas id="chart" width="400" height="400"></canvas>
+    <canvas id="chart" width="800" height="400"></canvas>
     <script>
-      const xlabels = [];
       chartIt();
 
       async function chartIt() {
-        await getData();
+        const data = await getData();
         const ctx = document.getElementById("chart").getContext("2d");
 
         const myChart = new Chart(ctx, {
-          type: "bar",
+          type: "line",
           data: {
-            labels: xlabels,
+            labels: data.xs,
             datasets: [
               {
-                label: "Global Average Temperature",
-                data: [12, 19, 3, 5, 2, 3],
-                backgroundColor: ["rgba(255, 99, 132, 0.2)"],
-                borderColor: ["rgba(255, 99, 132, 1)"],
+                label:
+                  "Global Average TemperatureCombined Land-Surface Air and Sea-Surface Water Temperature in C°",
+                data: data.ys,
+                backgroundColor: "rgba(255, 99, 132, 0.2)",
+                borderColor: "rgba(255, 99, 132, 1)",
                 borderWidth: 1,
               },
             ],
+          },
+          options: {
+            scales: {
+              y: {
+                ticks: {
+                  callback: function (value, index, values) {
+                    return value + "°";
+                  },
+                },
+              },
+            },
           },
         });
       }
 
       async function getData() {
+        const xs = [];
+        const ys = [];
         const response = await fetch("ZonAnn.Ts+dSST.csv");
         const data = await response.text();
 
@@ -42,10 +55,12 @@
         table.forEach((row) => {
           const columns = row.split(",");
           const year = columns[0];
-          xlabels.push(year);
+          xs.push(year);
           const temp = columns[1];
+          ys.push(parseFloat(temp) + 14);
           console.log(year, temp);
         });
+        return { xs, ys };
       }
     </script>
   </body>
